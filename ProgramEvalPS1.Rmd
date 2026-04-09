@@ -50,7 +50,70 @@ microcredit had they not received the microcredit.
 
 
 6.
+```{r}
+# create histogram of post treatment incomes
 
+# define an object that holds earnings for treated households
+treated_inc <- df_data$endline_income[df_data$farms_trt == 1]
+
+# compute the median treated income
+med_treat_inc <- median(treated_inc, na.rm = TRUE)
+
+# plot income of treated households
+ggplot(data.frame(treated_inc), aes(x = treated_inc)) +
+  geom_histogram(fill = "skyblue", color = "white", bins = 10) +
+  geom_vline(xintercept = med_treat_inc, color = "red") +
+  annotate("text",
+           x = med_treat_inc,
+           y = Inf, 
+           label = paste("Median =", round(med_treat_inc, 2)), 
+           vjust = 2, 
+           color = "red") +
+  labs(title = "Post-Treatment Income on Treated Households",
+       x = "Income",
+       y = "Number of Households") +
+  theme_minimal()
+
+# define an object that holds earnings for untreated households
+untreated_inc <- df_data$endline_income[df_data$farms_trt == 0]
+
+# compute the median untreated income
+med_untreat_inc <- median(untreated_inc, na.rm = TRUE)
+
+# plot income of untreated households
+ggplot(data.frame(treated_inc), aes(x = treated_inc)) +
+  geom_histogram(fill = "skyblue", color = "white", bins = 10) +
+  geom_vline(xintercept = med_untreat_inc, color = "red") + 
+  annotate("text",
+           x = med_untreat_inc,
+           y = Inf, 
+           label = paste("Median =", round(med_untreat_inc, 2)), 
+           vjust = 2, 
+           color = "red") +
+  labs(title = "Post-Treatment Income on Unreated Households",
+       x = "Income",
+       y = "Number of Households") +
+  theme_minimal()
+
+```
+
+The difference in average income between the treatment and control group is 
+4721 - 1378 = 3343.
+
+```{r results='asis', warning=FALSE}
+# estimate the ATE
+
+base_rg <- lm(endline_income ~ farms_trt,
+              data = df_data)
+
+summary(base_rg)
+```
+
+The interpretation of the coefficient is that access to the microcredit 
+increased income by 2736.63 units. This result is statistically 
+significant. This is 606.37 units less of an increase than the simple 
+difference in means. The effect is larger relative to the mean in the control 
+group (1378).
 
 7.
 
