@@ -17,7 +17,11 @@ library(tinytex)
 
 ```{r}
 ## load data
-df_data <- read_csv("C:/Users/blueb/Downloads/ps1_data_spring26.csv", show_col_types = FALSE)
+# @Jessica this data path will work if you set your directory to our program eval repo
+df_data <- read_csv("ps1_data_spring26.csv")
+
+#df_data <- read_csv("C:/Users/blueb/Downloads/ps1_data_spring26.csv", show_col_types = FALSE)
+
 ```
 
 ```{r}
