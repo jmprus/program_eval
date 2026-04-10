@@ -28,30 +28,79 @@ df_data <- read_csv("ps1_data_spring26.csv")
 glimpse(df_data)
 summary(df_data)
 ```
+1. The impact of access to microcredit (Yi) for a household i on income is the difference between the household's income with and without access to microcredit. 
 
-
-1.
-
+In math: Ti = Yi(1) - Yi(0),
+where Ti is the income impact for household i, Yi(1) is the income of household i with access to microcredit, and Yi(0) is the income of household i without access to microcredit.
 
 2. Measuring household specific treatment effects is impossible because of 
 selection bias. The households who receive and don't receive the microcredit 
 might be systematically different from each other, would would in turn affect 
 the magnitude of the results which may not represent the true impact. 
 
-3.
+# ^^ I think they're getting at the fundamental problem of causal inference?
+
+3. This estimator measures not just the average treatment effect on income, but the income impact of other variables that distinguish households with microcredit access from households without microcredit access. Their suggested estimator is sometimes called the "naive estimator" because of the selection problem; access to microcredit is likely not provided at random, which means that there are other factors that may bias the estimate, unequally impacting income for those with access to microcredit and those without. For example, households with access to microfinancing might tend to have more resourced local governments, which assist household income with a variety of interventions in addition to microcredit options. This disparity, among others, would bias the estimate.
 
 
-4. In this context, the ATT would be the average outcome from receiving the 
+4. ATT = E[Yi(1) - Yi(0)|Di=1] 
+In this context, the ATT would be the average outcome from receiving the 
 microcredit on households who did receive the microcredit subtracted by the 
 average outcome from not receiving the microcredit on the households who did 
 receive the microcredit. The FARMS data will not allow us to estimate the ATT, 
 because we are unable to observe the outcomes of households who received the 
 microcredit had they not received the microcredit. 
 
+5. The histograms suggest that treated households have a higher average income pre-treatment. The balance table shows that the treated and untreated groups were statistically different on income, agricultural expenditure, household size, and livestock ownership even before treatment (access to microcredit for the treatment group). In order to estimate the causal effect of farms_trt, we must be able to reasonably assume that the treatment and control group are statistically the same on unobserved characteristics.
 
-5.
+```{r}
+# HISTOGRAMS
+# create histogram of pre-treatment incomes
 
+# define an object that holds baseline income for treated households
+treated_inc_pre <- df_data$baseline_income[df_data$farms_trt == 1]
 
+# plot income of treated households
+ggplot(data.frame(treated_inc_pre), aes(x = treated_inc_pre)) +
+  geom_histogram(fill = "skyblue", color = "white", bins = 10) +
+  labs(title = "Pre-Treatment Income on Treated Households",
+       x = "Income",
+       y = "Number of Households") +
+  theme_minimal()
+
+# repeat for untreated households
+untreated_inc_pre <- df_data$baseline_income[df_data$farms_trt == 0]
+
+# plot income of untreated households
+ggplot(data.frame(untreated_inc_pre), aes(x = untreated_inc_pre)) +
+  geom_histogram(fill = "skyblue", color = "white", bins = 10) +
+  labs(title = "Pre-Treatment Income on Untreated Households",
+       x = "Income",
+       y = "Number of Households") +
+  theme_minimal()
+```
+```{r}
+# BALANCE TEST
+# run regression on each covariate (week 2 TA session)
+
+regressions <- df_data %>% 
+  select("baseline_income", 
+         "baseline_agexp", 
+         "baseline_hhsize", 
+         "baseline_livestock") %>% 
+  lapply(function(x) lm(x ~ farms_trt, data = df_data))
+
+# pull the regression coefficient and p-value
+balance_table <- regressions %>%
+  sapply(function(x) coef(summary(x))[c(2,8)]) %>%
+  t()
+
+# format the table output
+balance_table %>%
+  kable(col.names = c("Differences in means", "p-value")) %>%
+  kable_styling(position = "center", font_size = 8.5, latex_options = "hold_position")
+
+```
 
 6.
 ```{r}
