@@ -28,6 +28,7 @@ df_data <- read_csv("ps1_data_spring26.csv")
 glimpse(df_data)
 summary(df_data)
 ```
+
 1. The impact of access to microcredit (Yi) for a household i on income is the difference between the household's income with and without access to microcredit. 
 
 In math: Ti = Yi(1) - Yi(0),
@@ -172,8 +173,46 @@ significant. This is 606.37 units less of an increase than the simple
 difference in means. The effect is larger relative to the mean in the control 
 group (1378).
 
-7.
+7. This is not a good idea because they're essentially proposing that we control 
+for a factor that (may) directly impact the outcome variable. If agricultural 
+investment is the mechanism by which microcredit increases income, then 
+controlling for agricultural investment will be akin to controlling for our 
+outcome variable. This would mask the treatment effect and significantly bias
+our estimate. 
 
+The (bad) regression suggests that the treatment is not effective (coeffecient 
+of 7.1 and p-value of 0.52), 
+but that post-treatment agricultural expenditure is attributed to a 2.4 monthly
+increase in income (p-value of 0, highly significant results). While the 
+regression from question 6 suggests a large, statistically significant treatment 
+effect, this new regression suggests a small and statistically insignificant 
+treatment effect.
+
+After controlling for baseline agricultural investment, we get a 2,734 
+coefficient for the treatment variable (p = 0, statistically significant). We 
+also see a small (1.87) and statistically insignificant (p = 0.528) effect
+from pre-treatment agricultural investment. This new coefficient is nearly
+identical to our estimate from question 6 (2734 vs. 2737), and both this 
+regression and the Q6 regression p-values of approximately zero.
+
+Word count: 188
+
+```{r}
+# regress income on treatment and endline amount of agricultural investment
+
+reg_end_agexp <- lm(endline_income ~ farms_trt + endline_agexp,
+              data = df_data)
+
+summary(reg_end_agexp)
+
+# regress income on treatment and baseline ag investment
+
+reg_bl_agexp <- lm(endline_income ~ farms_trt + baseline_agexp,
+              data = df_data)
+
+summary(reg_bl_agexp)
+
+```
 
 8. In light of this new information, I estimated the intent-to-treat (ITT) 
 estimate in question 6. The ITT estimate measures the effect of offering 
