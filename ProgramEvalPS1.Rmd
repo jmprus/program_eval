@@ -34,11 +34,15 @@ In math: Ti = Yi(1) - Yi(0),
 where Ti is the income impact for household i, Yi(1) is the income of household i with access to microcredit, and Yi(0) is the income of household i without access to microcredit.
 
 2. Measuring household specific treatment effects is impossible because of 
-selection bias. The households who receive and don't receive the microcredit 
-might be systematically different from each other, would would in turn affect 
-the magnitude of the results which may not represent the true impact. 
+selection bias. Selection bias is relevant because the households who receive 
+and don't receive the microcredit might be systematically different from each 
+other, would would in turn affect the magnitude of the results which may not 
+represent the true impact. Measuring household specific treatment effects is 
+also impossible due to the fundamental problem of causal inference as we are 
+unable to observe both potential outcomes of a household being treated and 
+untreated at the same time. We are unable to calculate the counterfactual, and 
+are therefore unable to calculate individual household effects.
 
-# ^^ I think they're getting at the fundamental problem of causal inference?
 
 3. This estimator measures not just the average treatment effect on income, but the income impact of other variables that distinguish households with microcredit access from households without microcredit access. Their suggested estimator is sometimes called the "naive estimator" because of the selection problem; access to microcredit is likely not provided at random, which means that there are other factors that may bias the estimate, unequally impacting income for those with access to microcredit and those without. For example, households with access to microfinancing might tend to have more resourced local governments, which assist household income with a variety of interventions in addition to microcredit options. This disparity, among others, would bias the estimate.
 
@@ -171,13 +175,18 @@ group (1378).
 7.
 
 
-8.
+8. In light of this new information, I estimated the intent-to-treat (ITT) 
+estimate in question 6. The ITT estimate measures the effect of offering 
+treatment, which includes non-compliance. The ITT differs from the ATE in that 
+the ATE measures the actual effect of the treatment while the ITT measures the 
+effect of offering treatment. The ITT is always less than the ATE.
 
 
 9.
 
 
-10.
+10. If they are correct, then the estimate in question 6 underestimates the 
+treatment effect.
 
 
 
