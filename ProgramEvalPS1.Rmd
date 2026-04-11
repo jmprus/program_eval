@@ -155,7 +155,7 @@ ggplot(data.frame(treated_inc), aes(x = treated_inc)) +
 
 ```
 
-The difference in average income between the treatment and control group is 
+The difference in average income ($/month) between the treatment and control group is 
 4721 - 1378 = 3343.
 
 ```{r results='asis', warning=FALSE}
@@ -168,8 +168,8 @@ summary(base_rg)
 ```
 
 The interpretation of the coefficient is that access to the microcredit 
-increased income by 2736.63 units. This result is statistically 
-significant. This is 606.37 units less of an increase than the simple 
+increased income by 2736.63 U.S. dollars per month This result is statistically 
+significant. This is 606.37 $/month less of an increase than the simple 
 difference in means. The effect is larger relative to the mean in the control 
 group (1378).
 
@@ -182,7 +182,7 @@ our estimate.
 
 The (bad) regression suggests that the treatment is not effective (coeffecient 
 of 7.1 and p-value of 0.52), 
-but that post-treatment agricultural expenditure is attributed to a 2.4 monthly
+but that post-treatment agricultural expenditure is attributed to a $2.40 monthly
 increase in income (p-value of 0, highly significant results). While the 
 regression from question 6 suggests a large, statistically significant treatment 
 effect, this new regression suggests a small and statistically insignificant 
@@ -221,8 +221,35 @@ the ATE measures the actual effect of the treatment while the ITT measures the
 effect of offering treatment. The ITT is always less than the ATE.
 
 
-9.
+9. In math: ATT (average treatment effect on the treated) = E[Yi(1) - Yi(0)|Di = 1]
+Using data on treatment assignment and actual treatment (where the treatment is 
+the actual use of a microcredit loan), we can estimate the average treatment 
+effect on the treated (ATT). In this case, the ATT is the estimated average effect 
+of a microcredit on income specifically for the population of households who 
+have access to microcredits. This allows us to estimate the effect of the actual
+microcredit without relying on an assumption of compliance. 
 
+Our ITT estimate is 3618 $/month (see below). The regression suggests that, for
+households with access to microcredits, the use of a microcredit will result in
+an additional (compared to baseline) $3,618 per month. This result exhibits 
+high statistical significance with a p-value of about zero. This new estimate is
+nearly $1,000 higher than the one from question 6. This suggests that 
+microcredits are highly effective for the types of households that have access
+to them, and lack of compliance within the treatment group negatively biased our
+average treatment effect estimate. 
+
+```{r}
+# source: https://www.statology.org/subset-data-frame-in-r/
+
+# make a new df with only those assigned treatment
+df_treated <- subset(df_data, farms_trt == 1)
+
+# run a regression on microcredit usage
+itt_reg <- lm(endline_income ~ farms_got_loan,
+              data = df_treated)
+
+summary(itt_reg)
+```
 
 10. If they are correct, then the estimate in question 6 underestimates the 
 treatment effect. If the control households have increased income as a result 
