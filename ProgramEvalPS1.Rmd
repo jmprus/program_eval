@@ -186,7 +186,15 @@ effect of offering treatment. The ITT is always less than the ATE.
 
 
 10. If they are correct, then the estimate in question 6 underestimates the 
-treatment effect.
+treatment effect. If the control households have increased income as a result 
+of their neighbors receiving the microcredit, then the true difference between 
+the effects of receiving the microcredit and not receiving the microcredit is 
+higher than the calculated difference from question 6. The income of control 
+households is an overestimate, which results in downward bias for the estimated 
+treatment effect. The estimated treatment effect in question 6 is the lower 
+bound for the true treatment effect because spillovers make the average outcome 
+higher than without treatment.
+
 
 
 
