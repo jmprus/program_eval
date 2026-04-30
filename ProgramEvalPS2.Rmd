@@ -47,10 +47,17 @@ connected.
 
 2.
 If we simply compared connected to non-connected firms, then we wouldn't be 
-accounting for fundamental differences between the firms which would distort our 
-calculation of the estimated effect of electricity connection.
+accounting for fundamental differences between the firms, which would distort our 
+calculation of the estimated effect of electricity connection. In other words,
+we would get the naive estimator, which does not account for selection bias.
 
-from ta session 2
+The balance table below shows that the connected and non-connected firm groups are 
+statistically different (p>0.05) on the number of livestock and the number of 
+employees. This systemic difference between the two groups reduces my faith in the
+comparison that PEDAP wants to make because it shows that the two groups are 
+meaningfully different on factors that could impact revenue.
+
+From ta session 2:
 ```{r}
 # apply the regression to all pre-treatment covariates
 regressions <- df_data %>%
@@ -64,7 +71,7 @@ regressions <- df_data %>%
 
 # pull the regression coefficient and p-value
 balance_table <- regressions %>%
-  sapply(function(x) summary(coef(x))[c(2,8)]) %>%
+  sapply(function(x) coef(summary(x))[c(2,8)]) %>%
   t()
 
 # format the table output
@@ -77,6 +84,8 @@ balance_table %>%
 3. (optional, ungraded)
 
 4.
+
+Lab 3:
 ```{r}
 # check for common support for the conditional independence assumption
 # make control variable
@@ -90,6 +99,7 @@ df_data %>%
             n_unconnected = sum(no_grid_connection),
             .groups = "keep") # to see total number of employee groups
 ```
+
 ```{r}
 # check common support for multi-variable "cells" (check if we have treated and control observations across multiple observable variables)
 df_data %>%
@@ -138,6 +148,7 @@ grp_fin  <- grp %>% filter(!is.na(diff))
 ```
 
 ```{r}
+<<<<<<< HEAD
 # estimate tau ATE as the weighted average
 ate <- weighted.mean(grp_fin$diff,
                      w = (grp_fin$count_connected + 
@@ -150,6 +161,18 @@ naive <- mean(df_data$firm_revenue[df_data$grid_connection == 1]) -
   mean(df_data$firm_revenue[df_data$grid_connection == 0])
 
 naive
+=======
+# estimate tau ATE as a weighted average
+ate <- weighted.mean(grp_fin$diff, 
+                     w = (grp_fin$count_connected + grp_fin$count_unconnected)) 
+
+ate
+
+# Estimate the tau_att as as weighted average
+att <- weighted.mean(grp_fin$diff,
+                     w = grp_fin$count_connected) 
+att
+>>>>>>> 85e394361540d6a898f7f278e954ddba4ffa8b3c
 ```
 
 
