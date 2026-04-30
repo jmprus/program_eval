@@ -1,7 +1,7 @@
 ---
-title: "ProgramEvalPS1"
+title: "Program Evaluation PS1"
 author: "Jessica Prus and Arianna Wooten"
-date: "2026-04-09"
+date: "2026-04-10"
 output: pdf_document
 ---
 
@@ -29,19 +29,15 @@ glimpse(df_data)
 summary(df_data)
 ```
 
-1. The impact of access to microcredit (Yi) for a household i on income is the difference between the household's income with and without access to microcredit. 
+1. The impact of access to microcredit for a household i on income is the difference between the household's income with and without access to microcredit. 
 
 In math: Ti = Yi(1) - Yi(0),
-where Ti is the income impact for household i, Yi(1) is the income of household i with access to microcredit, and Yi(0) is the income of household i without access to microcredit.
+where Ti is the impact of treatment for household i in $/month, Yi(1) is the income of household i with access to microcredit, and Yi(0) is the income of household i without access to microcredit.
 
-2. Measuring household specific treatment effects is impossible because of 
-selection bias. Selection bias is relevant because the households who receive 
-and don't receive the microcredit might be systematically different from each 
-other, would would in turn affect the magnitude of the results which may not 
-represent the true impact. Measuring household specific treatment effects is 
-also impossible due to the fundamental problem of causal inference as we are 
+2. Measuring household specific treatment effects is 
+impossible due to the fundamental problem of causal inference as we are 
 unable to observe both potential outcomes of a household being treated and 
-untreated at the same time. We are unable to calculate the counterfactual, and 
+untreated at the same time. We are unable to observe the counterfactual, and 
 are therefore unable to calculate individual household effects.
 
 
@@ -259,7 +255,7 @@ higher than the calculated difference from question 6. The income of control
 households is an overestimate, which results in downward bias for the estimated 
 treatment effect. The estimated treatment effect in question 6 is the lower 
 bound for the true treatment effect because spillovers make the average outcome 
-higher than without treatment.
+higher than without treatment. 
 
 
 
