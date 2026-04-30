@@ -7,9 +7,159 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+
+library(tidyverse)
+library(stargazer)  
+library(broom)      
+library(kableExtra) 
+library(tinytex)
 ```
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+```{r}
+## load data
+# @Jessica this data path will work if you set your directory to our program eval repo
+df_data <- read_csv("ps2_data_spring26.csv", show_col_types = FALSE)
 ```
+
+```{r}
+glimpse(df_data)
+summary(df_data)
+```
+
+
+1. 
+The ideal experiment would be to randomly assign grid electricity connection 
+to SMEs, and find the difference between the average firm annual revenues for 
+SMEs who are assigned grid electricity and SMEs who are not assigned. We can 
+calculate this difference by using the formula for the average treatment effect, 
+which is as follows: 
+tau ATE = E[Yi|Di=1] - E[Yi|Di=0]
+Di is whether SMEs are 
+assigned to grid electricity connections, with 1 meaning the firm is connected 
+and 0 meaning the firm is not connected. Yi is the outcome after being connected
+to the grid, which in this case would be a firm's annual revenue. E means that 
+we take the average of SMEs' annual revenue across firms. We take two averages: 
+the average firm annual revenue for firms who are connected to the electricity 
+grid and the average firm annual revenue for firms who are not connected to the 
+grid. The tau ATE is the difference in average revenues between SMEs who are 
+connected to the grid and SMEs who are not connected.
+
+
+
+2.
+If we simply compared connected to non-connected firms, then we wouldn't be 
+accounting for fundamental differences between the firms which would distort our 
+calculation of the estimated effect of electricity connection.
+
+from ta session 2
+```{r}
+# apply the regression to all pre-treatment covariates
+regressions <- df_data %>%
+  select("owner_older40",
+         "owner_male",
+         "num_livestock",
+         "years_edu",
+         "num_employees",
+         "grid_subsidy_amount") %>% 
+  lapply(function(x) lm(x ~ grid_connection, data = df_data))
+
+# pull the regression coefficient and p-value
+balance_table <- regressions %>%
+  sapply(function(x) summary(coef(x))[c(2,8)]) %>%
+  t()
+
+# format the table output
+balance_table %>%
+  kable(col.names = c("Differences in means", "p-value")) %>%
+  kable_styling(position = "center", font_size = 8.5, latex_options = "hold_position")
+```
+
+
+3. (optional, ungraded)
+
+4.
+```{r}
+# check for common support for the conditional independence assumption
+# make control variable
+df_data <- df_data %>%
+  mutate(no_grid_connection = ifelse(grid_connection==0,1,0))
+
+# are there treated and control people at each level of the X variable?
+df_data %>%
+  group_by(num_employees) %>%
+  summarize(n_connected = sum(grid_connection),
+            n_unconnected = sum(no_grid_connection),
+            .groups = "keep") # to see total number of employee groups
+```
+```{r}
+# check common support for multi-variable "cells" (check if we have treated and control observations across multiple observable variables)
+df_data %>%
+  group_by(owner_older40, owner_male, num_livestock, years_edu, num_employees,
+         grid_subsidy_amount) %>%
+    summarize(n_connected = sum(grid_connection),
+            n_unconnected = sum(no_grid_connection),
+            .groups = "keep") 
+
+```
+```{r}
+# find the usable cells that we can find a treatment effect for
+usable_cells <- df_data %>%
+   group_by(owner_older40, owner_male, num_livestock, years_edu, num_employees,
+         grid_subsidy_amount) %>%
+    summarize(n_connected = sum(grid_connection),
+            n_unconnected = sum(no_grid_connection),
+            .groups = "keep") %>%
+  filter(n_connected > 0) %>%
+  filter(n_unconnected > 0)
+
+usable_cells
+```
+
+```{r}
+# calculate the treatment effect
+
+# calculate the means by cell * treatment status
+grp <- df_data %>%
+  group_by(owner_older40, owner_male, num_livestock, years_edu, num_employees,
+         grid_subsidy_amount) %>%
+  summarize(mean_revenue_connected =
+              sum(firm_revenue*grid_connection)/sum(grid_connection),
+            mean_revenue_unconnected = sum(firm_revenue*no_grid_connection)/
+              sum(no_grid_connection),
+            count_connected = sum(grid_connection),
+            count_unconnected = sum(no_grid_connection),
+            .groups = "keep")
+
+# convert the zero count cells to NA
+grp <- grp %>% mutate(mean_revenue_connected = ifelse(count_connected==0, NA,
+                                                      mean_revenue_connected),
+                      mean_revenue_unconnected = ifelse(count_unconnected==0,NA, 
+                                                        mean_revenue_unconnected))
+
+# take difference for each cell
+grp$diff <- grp$mean_revenue_connected - grp$mean_revenue_unconnected
+grp_fin  <- grp %>% filter(!is.na(diff))
+```
+
+```{r}
+# estimate tau ATE as a weighted average
+```
+
+
+5.
+
+6.
+
+7.
+
+8.
+
+9.
+
+10.
+
+
+
 
