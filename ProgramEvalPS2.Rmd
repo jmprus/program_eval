@@ -156,7 +156,6 @@ grp_fin  <- grp %>% filter(!is.na(diff))
 ```
 
 ```{r}
-<<<<<<< HEAD
 # estimate tau ATE as the weighted average
 ate <- weighted.mean(grp_fin$diff,
                      w = (grp_fin$count_connected + 
@@ -169,7 +168,6 @@ naive <- mean(df_data$firm_revenue[df_data$grid_connection == 1]) -
   mean(df_data$firm_revenue[df_data$grid_connection == 0])
 
 naive
-=======
 # estimate tau ATE as a weighted average
 ate <- weighted.mean(grp_fin$diff, 
                      w = (grp_fin$count_connected + grp_fin$count_unconnected)) 
@@ -180,7 +178,6 @@ ate
 att <- weighted.mean(grp_fin$diff,
                      w = grp_fin$count_connected) 
 att
->>>>>>> 85e394361540d6a898f7f278e954ddba4ffa8b3c
 ```
 
 ```{r}
@@ -247,19 +244,17 @@ summary(reg_subsidy)
 
 9. 
 
-10.  Second, she
-wants to know if it would be a problem for your analysis if larger subsidy amounts were
-recorded with error, but smaller subsidy amounts were accurately recorded. If yes, can
-you use an instrumental variables approach to address this problem?
-
-Random noise associated with the subsidy amount data would constitute a classical
+10. Random noise associated with the subsidy amount data would constitute a classical
 measurement error in Di. This causes attenuation bias (it biases the causal 
-estimate towards 0).* Luckily, the use of instrumental variables can 
+estimate towards 0) because of the bias that is embedded in the treatment (see
+Lecture 8, slides 16-17). Luckily, the use of instrumental variables can 
 correct the bias. 
 
-A systemic error in the subsidy amount data ()
+A systemic error in the subsidy amount data (non-classical measurement error in
+Di) would also bias our estimate, and instrumental variables could not address
+the problem.
 
-* Why?
+
 
 
 
