@@ -83,7 +83,9 @@ balance_table %>%
 
 3. (optional, ungraded)
 
-4. We decided to utilize all available variables because of their potential impact
+4. We decided to exclude the number of employees and number of livestock because 
+their distribution was not significantly different across the treated and 
+untreated groups.
 on revenue, but the tradeoff here is that we couldn't use as many data points due 
 to the curse of dimensionality. We saw the curse of dimensionality at play when, 
 for example, we had an unconnected farm with 10 employees but no *connected* 
@@ -120,7 +122,7 @@ df_data %>%
 ```{r}
 # find the usable cells that we can find a treatment effect for
 usable_cells <- df_data %>%
-   group_by(owner_older40, owner_male, num_livestock, num_employees) %>%
+   group_by(owner_older40, owner_male, years_edu, grid_subsidy_amount) %>%
     summarize(n_connected = sum(grid_connection),
             n_unconnected = sum(no_grid_connection),
             .groups = "keep") %>%
@@ -135,7 +137,7 @@ usable_cells
 
 # calculate the means by cell * treatment status
 grp <- df_data %>%
-  group_by(owner_older40, owner_male, num_livestock, num_employees) %>%
+  group_by(owner_older40, owner_male, years_edu, grid_subsidy_amount) %>%
   summarize(mean_revenue_connected =
               sum(firm_revenue*grid_connection)/sum(grid_connection),
             mean_revenue_unconnected = sum(firm_revenue*no_grid_connection)/
