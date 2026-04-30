@@ -36,15 +36,12 @@ SMEs who are assigned grid electricity and SMEs who are not assigned. We can
 calculate this difference by using the formula for the average treatment effect, 
 which is as follows: 
 tau ATE = E[Yi|Di=1] - E[Yi|Di=0]
-Di is whether SMEs are 
-assigned to grid electricity connections, with 1 meaning the firm is connected 
-and 0 meaning the firm is not connected. Yi is the outcome after being connected
-to the grid, which in this case would be a firm's annual revenue. E means that 
-we take the average of SMEs' annual revenue across firms. We take two averages: 
-the average firm annual revenue for firms who are connected to the electricity 
-grid and the average firm annual revenue for firms who are not connected to the 
-grid. The tau ATE is the difference in average revenues between SMEs who are 
-connected to the grid and SMEs who are not connected.
+Di is whether SMEs are assigned to grid electricity connections, with 1 meaning 
+the firm is connected and 0 meaning the firm is not connected. Yi is the outcome after being connected to the grid, which in this case would be a firm's annual revenue. E means that we take the average of SMEs' annual revenue across firms. 
+We take two averages: the average firm annual revenue for firms who are 
+connected to the electricity grid and the average firm annual revenue for firms 
+who are not connected to the grid. The tau ATE is the difference in average revenues between SMEs who are connected to the grid and SMEs who are not 
+connected.
 
 
 
@@ -96,8 +93,7 @@ df_data %>%
 ```{r}
 # check common support for multi-variable "cells" (check if we have treated and control observations across multiple observable variables)
 df_data %>%
-  group_by(owner_older40, owner_male, num_livestock, years_edu, num_employees,
-         grid_subsidy_amount) %>%
+  group_by(owner_older40, owner_male, num_livestock, num_employees) %>%
     summarize(n_connected = sum(grid_connection),
             n_unconnected = sum(no_grid_connection),
             .groups = "keep") 
@@ -106,8 +102,7 @@ df_data %>%
 ```{r}
 # find the usable cells that we can find a treatment effect for
 usable_cells <- df_data %>%
-   group_by(owner_older40, owner_male, num_livestock, years_edu, num_employees,
-         grid_subsidy_amount) %>%
+   group_by(owner_older40, owner_male, num_livestock, num_employees) %>%
     summarize(n_connected = sum(grid_connection),
             n_unconnected = sum(no_grid_connection),
             .groups = "keep") %>%
@@ -122,8 +117,7 @@ usable_cells
 
 # calculate the means by cell * treatment status
 grp <- df_data %>%
-  group_by(owner_older40, owner_male, num_livestock, years_edu, num_employees,
-         grid_subsidy_amount) %>%
+  group_by(owner_older40, owner_male, num_livestock, num_employees) %>%
   summarize(mean_revenue_connected =
               sum(firm_revenue*grid_connection)/sum(grid_connection),
             mean_revenue_unconnected = sum(firm_revenue*no_grid_connection)/
@@ -144,10 +138,33 @@ grp_fin  <- grp %>% filter(!is.na(diff))
 ```
 
 ```{r}
-# estimate tau ATE as a weighted average
+# estimate tau ATE as the weighted average
+ate <- weighted.mean(grp_fin$diff,
+                     w = (grp_fin$count_connected + 
+                            grp_fin$count_unconnected))
+ate
+```
+```{r}
+# calculate treatment effect using the naive estimator
+naive <- mean(df_data$firm_revenue[df_data$grid_connection == 1]) - 
+  mean(df_data$firm_revenue[df_data$grid_connection == 0])
+
+naive
 ```
 
 
+I decided to include all variables except for years of education and grid 
+subsidy amount as these two variables had significant differences in means 
+between the treatment and control groups. These characteristics were unbalanced 
+between the treatment and control groups which could affect the calculated ATE. 
+The calculation finds that SMEs who are connected to the grid have an increased 
+12111.93 dollars in firm annual revenue compared to SMEs who are not connected 
+to the grid. The strength of this approach is now it is able to account for 
+variables covariates to isolate the estimated treatment effect. The weakness of 
+this approach is that the more covariates that are included in the calculation 
+to be matched with each other, the less likely matches occur and the smaller 
+the data set becomes. The result from the exact matching approach (12111.93) 
+is lesser than the result from the naive estimator (12992.22). 
 5.
 
 6.
