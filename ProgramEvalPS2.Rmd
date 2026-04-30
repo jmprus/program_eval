@@ -85,15 +85,12 @@ balance_table %>%
 
 4. We decided to exclude the number of employees and number of livestock because 
 their distribution was not significantly different across the treated and 
-untreated groups.
-on revenue, but the tradeoff here is that we couldn't use as many data points due 
-to the curse of dimensionality. We saw the curse of dimensionality at play when, 
-for example, we had an unconnected farm with 10 employees but no *connected* 
-farm with 10 employees available for comparison.
-Our estimated average treatment effect (ATE) is 12,231, suggesting that the presence of
-grid connection contributes to a $12,231 annual revenue increase, on average, in 
+untreated groups. We saw the curse of dimensionality at play when certain 
+grid-connected firms had no matching non-connected firms available for comparison.
+Our estimated average treatment effect (ATE) is 12,565, suggesting that the presence of
+grid connection contributes to a $12,565 annual revenue increase, on average, in 
 Uganda. This estimated ATE is *less* than the naive estimator (12,992) by about
-$700/yr.
+$450/yr.
 
 Lab 3:
 ```{r}
@@ -206,13 +203,13 @@ is lesser than the result from the naive estimator (12992.22).
 
 6. We would use grid subsidy access as an instrumental variable for grid 
 connection status We would first examine the impact of the subsidy on revenue.
-Then we would estimate the impact of the subsidy on a farm's likelihood of grid
+Then we would estimate the impact of the subsidy on a firm's likelihood of grid
 connection. We'd finally arrive at our estimated IV treatment effect by dividing
 the former estimate by the latter.
 
 In math: 
 Reduced form (regressing Yi on Zi): Yi = alpha + theta*Zi + πXi + ni
-where i is an individual farm, Zi equals 1 if i received the subsidy and
+where i is an individual firm, Zi equals 1 if i received the subsidy and
 0 otherwise, Xi represents covariates, and ni represents the error term.
 
 First stage (regressing Di on Zi): Di = alpha + gamma*Zi + ßXi + ni
@@ -228,7 +225,7 @@ IV estimate = theta/gamma
 connection) on revenue, a.k.a. the reduced form estimator. This parameter has 
 limited use for policy. On the one hand, policymakers should care about how the 
 subsidy impacts revenue. On the other hand, selection bias could distort the 
-estimate because the subsidy might only be used by farms who would have obtained 
+estimate because the subsidy might only be used by firms who would have obtained 
 grid connection anyway. Essentially, this is a useful parameter in concept, but 
 the aforementioned regression is an unreliable way to estimate it. The regression 
 produces a coefficient of -6.6977 (p<0.05), suggesting that the subsidy decreases 
