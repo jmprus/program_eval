@@ -1,7 +1,7 @@
 ---
 title: "Problem Set 2"
 author: "Jessica Prus and Arianna Wooten"
-date: "2026-04-30"
+date: "2026-05-01"
 output: pdf_document
 ---
 
@@ -14,12 +14,12 @@ library(stargazer)
 library(broom)      
 library(kableExtra) 
 library(tinytex)
+library(AER)
 ```
 
 
 ```{r}
 ## load data
-# @Jessica this data path will work if you set your directory to our program eval repo
 df_data <- read_csv("ps2_data_spring26.csv", show_col_types = FALSE)
 ```
 
@@ -29,35 +29,36 @@ summary(df_data)
 ```
 
 
-1. 
-The ideal experiment would be to randomly assign grid electricity connection 
+1. The ideal experiment would be to randomly assign grid electricity connection 
 to SMEs, and find the difference between the average firm annual revenues for 
 SMEs who are assigned grid electricity and SMEs who are not assigned. We can 
 calculate this difference by using the formula for the average treatment effect, 
 which is as follows: 
 tau ATE = E[Yi|Di=1] - E[Yi|Di=0]
 Di is whether SMEs are assigned to grid electricity connections, with 1 meaning 
-the firm is connected and 0 meaning the firm is not connected. Yi is the outcome after being connected to the grid, which in this case would be a firm's annual revenue. E means that we take the average of SMEs' annual revenue across firms. 
+the firm is connected and 0 meaning the firm is not connected. Yi is the outcome 
+after being connected to the grid, which in this case would be a firm's annual 
+revenue. E means that we take the average of SMEs' annual revenue across firms. 
 We take two averages: the average firm annual revenue for firms who are 
 connected to the electricity grid and the average firm annual revenue for firms 
-who are not connected to the grid. The tau ATE is the difference in average revenues between SMEs who are connected to the grid and SMEs who are not 
+who are not connected to the grid. The tau ATE is the difference in average 
+revenues between SMEs who are connected to the grid and SMEs who are not 
 connected.
 
 
 
-2.
-If we simply compared connected to non-connected firms, then we wouldn't be 
-accounting for fundamental differences between the firms, which would distort our 
-calculation of the estimated effect of electricity connection. In other words,
-we would get the naive estimator, which does not account for selection bias.
+2. If we simply compared connected to non-connected firms, then we wouldn't be 
+accounting for fundamental differences between the firms, which would distort 
+our calculation of the estimated effect of electricity connection. In other 
+words, we would get the naive estimator, which does not account for selection 
+bias.
 
-The balance table below shows that the connected and non-connected firm groups are 
-statistically different (p>0.05) on the number of livestock and the number of 
-employees. This systemic difference between the two groups reduces my faith in the
-comparison that PEDAP wants to make because it shows that the two groups are 
-meaningfully different on factors that could impact revenue.
+The balance table below shows that the connected and non-connected firm groups 
+are statistically different (p>0.05) on the number of livestock and the number 
+of employees. This systemic difference between the two groups reduces my faith 
+in the comparison that PEDAP wants to make because it shows that the two groups 
+are meaningfully different on factors that could impact revenue.
 
-From ta session 2:
 ```{r}
 # apply the regression to all pre-treatment covariates
 regressions <- df_data %>%
@@ -77,7 +78,8 @@ balance_table <- regressions %>%
 # format the table output
 balance_table %>%
   kable(col.names = c("Differences in means", "p-value")) %>%
-  kable_styling(position = "center", font_size = 8.5, latex_options = "hold_position")
+  kable_styling(position = "center", font_size = 8.5, 
+                latex_options = "hold_position")
 ```
 
 
@@ -86,13 +88,12 @@ balance_table %>%
 4. We decided to exclude the number of employees and number of livestock because 
 their distribution was not significantly different across the treated and 
 untreated groups. We saw the curse of dimensionality at play when certain 
-grid-connected firms had no matching non-connected firms available for comparison.
-Our estimated average treatment effect (ATE) is 12,565, suggesting that the presence of
-grid connection contributes to a $12,565 annual revenue increase, on average, in 
-Uganda. This estimated ATE is *less* than the naive estimator (12,992) by about
-$450/yr.
+grid-connected firms had no matching non-connected firms available for 
+comparison. Our estimated average treatment effect (ATE) is 12,565, suggesting 
+that the presence of grid connection contributes to a $12,565 annual revenue 
+increase, on average, in Uganda. This estimated ATE is *less* than the naive 
+estimator (12,992) by about $450/yr.
 
-Lab 3:
 ```{r}
 # check for common support for the conditional independence assumption
 # make control variable
@@ -161,6 +162,7 @@ ate <- weighted.mean(grp_fin$diff,
                             grp_fin$count_unconnected))
 ate
 ```
+
 ```{r}
 # calculate treatment effect using the naive estimator
 naive <- mean(df_data$firm_revenue[df_data$grid_connection == 1]) - 
@@ -182,11 +184,10 @@ att
 ```{r}
 # Find naive estimator
 
-mean(subset(df_data, subset = grid_connection==1)$firm_revenue) - mean(subset(df_data, subset = grid_connection==0)$firm_revenue)
+mean(subset(df_data, subset = grid_connection==1)$firm_revenue) - 
+  mean(subset(df_data, subset = grid_connection==0)$firm_revenue)
 
 ```
-
-
 I decided to include all variables except for years of education and grid 
 subsidy amount as these two variables had significant differences in means 
 between the treatment and control groups. These characteristics were unbalanced 
@@ -198,8 +199,24 @@ variables covariates to isolate the estimated treatment effect. The weakness of
 this approach is that the more covariates that are included in the calculation 
 to be matched with each other, the less likely matches occur and the smaller 
 the data set becomes. The result from the exact matching approach (12111.93) 
-is lesser than the result from the naive estimator (12992.22). 
-5.
+is lesser than the result from the naive estimator (12992.22).
+
+
+5. Using instrumental variables (IV) would be a plausible strategy if the first 
+stage (land gradients are related to being assigned a grid connection) and 
+exclusion restriction (if land gradients only affect firm revenue through grid connections) requirements are met. The limitation of using an IV instrument is 
+that it may be difficult to prove the exclusion restriction as it involves the 
+error term of the equation. The exclusion restriction is satisfied by developing 
+a convincing argument that the IV instrument only affects the outcome variable 
+through the treatment. An alternative instrumental variable could be the type 
+of cable that links SMEs to the national power grid. Power cables with higher 
+voltage can affect the length of time required for charging or utilizing 
+machinery, in turn affecting the firm's productivity and outputs which affects 
+firm revenue. Power cables only affect firm revenue through connection to the 
+grid. This would be a good instrument because power cable voltage remains 
+constant and if provided by the government, does not face issues of spillovers 
+or inaccurate reporting by SMEs.
+
 
 6. We would use grid subsidy access as an instrumental variable for grid 
 connection status We would first examine the impact of the subsidy on revenue.
@@ -220,6 +237,17 @@ IV estimate = theta/gamma
 
 
 7.
+```{r}
+# run first stage regression of grid subsidy amount on grid connection
+first_stage <- lm(grid_connection ~ grid_subsidy_amount + years_edu, 
+                  data=df_data)
+
+summary(first_stage)
+```
+This estimates the variation in grid connection take-up caused by the grid 
+subsidy amount. The estimate finds that 0.0015452 percentage points of the 
+variation in grid connection take-up is caused by the grid subsidy amount. 
+
 
 8. This regression estimates the impact of grid subsidy access (not actual grid 
 connection) on revenue, a.k.a. the reduced form estimator. This parameter has 
@@ -227,26 +255,53 @@ limited use for policy. On the one hand, policymakers should care about how the
 subsidy impacts revenue. On the other hand, selection bias could distort the 
 estimate because the subsidy might only be used by firms who would have obtained 
 grid connection anyway. Essentially, this is a useful parameter in concept, but 
-the aforementioned regression is an unreliable way to estimate it. The regression 
-produces a coefficient of -6.6977 (p<0.05), suggesting that the subsidy decreases 
-annual revenue by about $7 per year on average.
-
+the aforementioned regression is an unreliable way to estimate it. The 
+regression produces a coefficient of -6.6977 (p<0.05), suggesting that the 
+subsidy decreases annual revenue by about $7 per year on average.
 
 ```{r}
 # run regression (reduced form)
 
-reg_subsidy <- lm(df_data$firm_revenue ~ df_data$grid_subsidy_amount + df_data$owner_older40 + df_data$owner_male + df_data$num_livestock + df_data$years_edu + df_data$num_employees + df_data$grid_connection)
+reg_subsidy <- lm(df_data$firm_revenue ~ df_data$grid_subsidy_amount + df_data$owner_older40 + df_data$owner_male + df_data$num_livestock + 
+                    df_data$years_edu + df_data$num_employees + 
+                    df_data$grid_connection)
 
 summary(reg_subsidy)
 
 ```
 
-9. 
 
-10. Random noise associated with the subsidy amount data would constitute a classical
-measurement error in Di. This causes attenuation bias (it biases the causal 
-estimate towards 0) because of the bias that is embedded in the treatment (see
-Lecture 8, slides 16-17). Luckily, the use of instrumental variables can 
+9. 
+```{r}
+# run first stage regression of grid subsidy amount on grid connection
+first_stage <- lm(grid_connection ~ grid_subsidy_amount + years_edu, 
+                  data=df_data)
+
+# run second stage regression of grid connection on firm revenue
+second_stage <- lm(firm_revenue ~ first_stage$fitted.values + years_edu, 
+                   data = df_data)
+
+summary(second_stage)
+```
+
+```{r}
+# run iv reg using ivreg
+iv_reg <- AER::ivreg(firm_revenue ~ grid_connection + years_edu | 
+                       grid_subsidy_amount + years_edu, data = df_data)
+summary(iv_reg)
+```
+Grid electricity connection does matter for firm revenues. Being connected to 
+the electricity grid increases firm revenues by $7409.7. This finding is 
+statistically significant, with a p-value of <2e-16. The standard error is 
+596.4, which does not cause concern because it is small relative to the 
+coefficient estimate of 7409.7 and it's smaller than the residual standard 
+deviation of 3258.
+
+
+10. Random noise associated with the subsidy amount data would constitute a 
+classical measurement error in Di. This causes attenuation bias (it biases the 
+causal estimate towards 0) because of the bias that is embedded in the treatment 
+(see Lecture 8, slides 16-17). Luckily, the use of instrumental variables can 
 correct the bias. 
 
 A systemic error in the subsidy amount data (non-classical measurement error in
