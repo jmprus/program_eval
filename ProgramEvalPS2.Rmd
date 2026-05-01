@@ -256,15 +256,14 @@ subsidy impacts revenue. On the other hand, selection bias could distort the
 estimate because the subsidy might only be used by firms who would have obtained 
 grid connection anyway. Essentially, this is a useful parameter in concept, but 
 the aforementioned regression is an unreliable way to estimate it. The 
-regression produces a coefficient of -6.6977 (p<0.05), suggesting that the 
-subsidy decreases annual revenue by about $7 per year on average.
+regression produces a coefficient of 12.90 (p<0.05), suggesting that the 
+subsidy increases annual revenue by about $12.90 per year on average.
 
 ```{r}
 # run regression (reduced form)
 
 reg_subsidy <- lm(df_data$firm_revenue ~ df_data$grid_subsidy_amount + df_data$owner_older40 + df_data$owner_male + df_data$num_livestock + 
-                    df_data$years_edu + df_data$num_employees + 
-                    df_data$grid_connection)
+                    df_data$years_edu + df_data$num_employees)
 
 summary(reg_subsidy)
 
@@ -289,6 +288,30 @@ summary(second_stage)
 iv_reg <- AER::ivreg(firm_revenue ~ grid_connection + years_edu | 
                        grid_subsidy_amount + years_edu, data = df_data)
 summary(iv_reg)
+```
+
+```{r}
+# alternate method (non-2SLS):
+# I also messed around with the covariates here FYI
+
+# Step 1: calculate the reduced form (as in Question 8)
+
+reg_subsidy <- lm(df_data$firm_revenue ~ df_data$grid_subsidy_amount + df_data$owner_older40 + df_data$owner_male + df_data$num_livestock + 
+                    df_data$years_edu + df_data$num_employees 
+                   )
+
+summary(reg_subsidy) # reduced form est = 12.90
+
+# Step 2: calculate the first stage estimate (as in Question 9)
+first_stage <- lm(grid_connection ~ grid_subsidy_amount + years_edu + owner_older40 + owner_male + num_livestock + years_edu + num_employees, 
+                  data=df_data)
+
+summary(first_stage) # first stage estimate = 0.0016333
+
+# Step 3: Divide reduced form / first stage
+
+12.90 / 0.0016333 # final estimate: 7898.12 
+  
 ```
 Grid electricity connection does matter for firm revenues. Being connected to 
 the electricity grid increases firm revenues by $7409.7. This finding is 
