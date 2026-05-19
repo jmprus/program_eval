@@ -9,3 +9,24 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+1. In a fully ideal world, we would measure the impact of providing access to 
+mobile banking on monthly household income using randomized control trials 
+(RCTs). Two RCTs would occur: one measuring the impact on rural communities, and 
+the other measuring the impact on peri-urban communities. To maximize the amount 
+of data generated, each RCT would include all individuals in rural and peri-
+urban communities. For each population (rural and peri-urban), the population 
+would be divided into two comparable groups. One half of the population would 
+be assigned a treatment status of receiving access to mobile banking, and the 
+other half would serve as a comparative control group who does not receive 
+access to mobile banking. The average treatment effect would be estimated by 
+finding the difference in monthly household incomes between households who 
+received access to mobile banking and those who did not. The relationship 
+between household income and mobile banking access would further be estimated 
+using a linear regression. This calculation would include controls for variables 
+which have the potential to affect monthly household incomes in order to isolate 
+the effect of mobile banking access on monthly household income.
+
+
+
+
+
