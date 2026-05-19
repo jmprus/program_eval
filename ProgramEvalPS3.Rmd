@@ -1,0 +1,11 @@
+---
+title: "ProgramEvalPS3"
+author: "Jessica Prus and Arianna Wooten"
+date: "2026-05-19"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
