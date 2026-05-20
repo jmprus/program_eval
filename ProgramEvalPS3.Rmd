@@ -28,24 +28,31 @@ the effect of mobile banking access on monthly household income.
 
 2.
 
-3. It would be better to have data on multiple households to observe whether 
-the trends observed in the data from the single household are similar to the 
-trends observed in other comparable households. This would help ensure that the 
-data from the single household is not an outlier and is representative of the 
-patterns observed in the majority of households who gained access to mobile 
-banking in 2009. Adding more households would also increase the precision and 
-decrease the bias of the estimated causal effect of mobile banking access. Data 
-on households that never registered for mobile banking would be useful as a 
-counterfactual to the data from households who did register. Non-registered 
-households can only be used as a counterfactual with the assumptions that 
-households who did not register are otherwise similar to those who did, and that 
-any differences are due to their status of registering for mobile banking. 
-If these assumptions hold, then the data from registered and non-registered 
-households can be used to estimate the effects of mobile banking access on 
-household income by regressing mobile banking access on houshold income using 
-a xxxx regression equation.
+3. It would be better to have data on multiple households, especially data on 
+all households that gained access in 2009, to confirm trends and ensure 
+comparability. Comparability would confirm that the data from the single 
+household is representative of the characteristics and patterns observed in 
+other households that gained access. Adding more households would also increase 
+the precision and decrease the bias of the estimated causal effect. Data on 
+households that never registered for mobile banking would be useful as a 
+counterfactual to the data from households who did. Non-registered households 
+can only be used as a counterfactual with the assumptions that households that 
+did not register are otherwise similar to those that did, and that any 
+differences in income are due to their registration status. If these assumptions 
+hold, then the data can be used to estimate the effects of mobile banking access 
+on household income by finding the average difference in incomes between 
+registered and non- registered households. The difference in incomes can be 
+calculated by regressing mobile banking access on household income using a 
+time-series difference-in-differences regression: 
 
-One concern could be that  
+estimated causal effect = alpha + tau(registration status * post-treatment 
+incomes)it + beta(registration status)i + delta(post-treatment incomes)t + 
+gamma(covariates)it + (error term)it
+
+One concern in using this approach is that it is unable to control for 
+unobserved characteristics. However, ensuring that  populations are comparable 
+decreases the likelihood that unobserved characteristics bias the estimated 
+causal effect.
 
 4.
 
