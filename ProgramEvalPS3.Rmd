@@ -26,7 +26,40 @@ using a linear regression. This calculation would include controls for variables
 which have the potential to affect monthly household incomes in order to isolate 
 the effect of mobile banking access on monthly household income.
 
+2.
 
+3. It would be better to have data on multiple households to observe whether 
+the trends observed in the data from the single household are similar to the 
+trends observed in other comparable households. This would help ensure that the 
+data from the single household is not an outlier and is representative of the 
+patterns observed in the majority of households who gained access to mobile 
+banking in 2009. Adding more households would also increase the precision and 
+decrease the bias of the estimated causal effect of mobile banking access. Data 
+on households that never registered for mobile banking would be useful as a 
+counterfactual to the data from households who did register. Non-registered 
+households can only be used as a counterfactual with the assumptions that 
+households who did not register are otherwise similar to those who did, and that 
+any differences are due to their status of registering for mobile banking. 
+If these assumptions hold, then the data from registered and non-registered 
+households can be used to estimate the effects of mobile banking access on 
+household income by regressing mobile banking access on houshold income using 
+a xxxx regression equation.
+
+One concern could be that  
+
+4.
+
+5.
+
+6.
+
+7.
+
+8.
+
+9.
+
+10.
 
 
 
