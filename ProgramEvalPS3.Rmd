@@ -26,7 +26,20 @@ using a linear regression. This calculation would include controls for variables
 which have the potential to affect monthly household incomes in order to isolate 
 the effect of mobile banking access on monthly household income.
 
-2.
+2. First, I would use the household's pre-mobile banking trends to estimate what
+the household's income would be without mobile banking at a given time *t*
+after the introduction of mobile banking access. Next, I would compare that 
+income estimate to the household's true income at time *t*. 
+
+In math, I would run a regression of income on time: Y = m[time] + b
+where Y is income, time spans from 2002 to 2008 (pre-treatment period), and
+b is the y-intercept (income at t=0). The coefficient m would be the estimated
+causal effect. 
+
+The key assumption embedded in this approach are that there were no 
+external factors/shocks that impacted income at the same time as mobile 
+banking. An external shock such as a career change or promotion within the
+household could significantly bias our estimate.
 
 3. It would be better to have data on multiple households, especially data on 
 all households that gained access in 2009, to confirm trends and ensure 
@@ -54,7 +67,22 @@ unobserved characteristics. However, ensuring that  populations are comparable
 decreases the likelihood that unobserved characteristics bias the estimated 
 causal effect.
 
-4.
+4. I would utilize a time-series diff-in-diff approach, regressing income on 
+time for two household groups: households that eventually got access to mobile
+banking and households that did not. This would involve fixed effects methodology
+to account for the varying treatment times.
+
+In math: Yit = tau(Dit) + beta(Xit) + [error]
+where Yit is the income for household i at time t, tau is the estimated treatment
+effect, Dit is the treatment status for household i at time t, and Xit represents
+covariates. 
+
+The key assumption here is the parallel trends assumption; our estimate will 
+only be unbiased if the timing of treatment was random and no external factors 
+changed between the pre- and post-treatment periods, impacting our outcome variable.
+We should be concerned that some households gained access to mobile banking 
+because of income-related factors like increased wifi access or a newfound
+ability to afford a cell phone. 
 
 5.
 
