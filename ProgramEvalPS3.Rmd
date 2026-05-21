@@ -187,7 +187,81 @@ mobile banking access increases household income by 100 units on average.
 
 9. 
 
-10.
+10. 
+```{r}
+# reference week 7 ta session
+
+# create time-to-treat variable
+
+df_data <- df_data %>%
+  mutate(
+    time_to_treat = case_when(
+      is.na(mobilebank_year)            ~ -1000,  # never-treated: reference throughout
+      year - mobilebank_year < -6       ~   -15,   # bin early pre-period
+      year - mobilebank_year >   6      ~    15,   # bin late post-period
+      TRUE                         ~ year - mobilebank_year
+    )
+  )
 
 
+  # I used -15 and 15 because the data only covers 15 years. Should cover everything? -       arianna
+
+summary(df_data$time_to_treat) # How is the median -505.5? Suggests an issue, no?
+
+# code time-to-treat values
+
+df_data <- df_data %>%
+  mutate(
+    D_0 = as.numeric(time_to_treat >= 0),
+    D_1 = as.numeric(time_to_treat >= 1),
+    D_2 = as.numeric(time_to_treat >= 2),
+    D_3 = as.numeric(time_to_treat >= 3),
+    D_4 = as.numeric(time_to_treat >= 4),
+    D_5 = as.numeric(time_to_treat >= 5),
+    D_6 = as.numeric(time_to_treat >= 6),
+    D_7 = as.numeric(time_to_treat >= 7),
+    D_8 = as.numeric(time_to_treat >= 8),
+    D_9 = as.numeric(time_to_treat >= 9),
+    D_10 = as.numeric(time_to_treat >= 10),
+    D_11 = as.numeric(time_to_treat >= 11),
+    D_12 = as.numeric(time_to_treat >= 12),
+    D_13 = as.numeric(time_to_treat >= 13),
+    D_14 = as.numeric(time_to_treat >= 14),
+    D_15 = as.numeric(time_to_treat >= 15)
+  )
+
+# run the distributed lab model
+
+dl <- feols(income ~ D_0 + D_1 + D_2 + D_3 + D_4 + D_5 + D_6 + D_7 + D_8 + D_9
+            + D_10 + D_11 + D_12 + D_13 + D_14 + D_15| # dl = distributed lag
+              household_id + year,
+            cluster = ~household_id,
+            data = df_data)
+
+etable(dl)
+
+```
+```{r}
+
+# week 7 ta session
+coef_df <- as.data.frame(coeftable(dl)) %>%
+  rownames_to_column("term") %>%
+  mutate(
+    period = 0:7, # put the number 7 here bc I got an error saying that  `period` must be size 8 or 1.  - arianna
+    ci_lo  = Estimate - 1.96 * `Std. Error`,
+    ci_hi  = Estimate + 1.96 * `Std. Error`
+  )
+
+ggplot(coef_df, aes(x = period, y = Estimate)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi), width = 0.25) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  scale_x_continuous(breaks = 0:6) +
+  labs(x     = "Years Since Obtaining Mobile Banking Access",
+       y     = "Marginal Effect on Mobile Banking Access",
+       title = "Distributed Lag Model: Income and Mobile Banking Access") +
+  theme_minimal()
+```
+
+The cumulative effect of treatment after 5 years is 3.96 income units.
 
