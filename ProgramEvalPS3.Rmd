@@ -84,15 +84,108 @@ We should be concerned that some households gained access to mobile banking
 because of income-related factors like increased wifi access or a newfound
 ability to afford a cell phone. 
 
+```{r}
+library(tidyverse)
+library(haven)
+library(fixest) 
+library(AER)
+
+df_data = read.csv("ps3_data_spring26.csv")
+```
+
 5.
 
 6.
 
+```{r}
+# REGRESSION
+
+# create subset of households treated only in 2009
+treated09 <- subset(df_data, subset = mobilebank_year==2009)
+
+# create a dummy variable for whether or not the the 2009 treatment time has elapsed
+treated09$treated <- ifelse(treated09$year > 2008, 1, 0)
+
+reg_timeseries09 <- lm(income ~ year + treated, data=treated09)
+
+summary(reg_timeseries09)
+```
+
+```{r}
+# PLOT
+
+# borrowing from ta session week 6
+
+treated09 %>% 
+  #filter(year_of_law == "1991"| is.na(year_of_law)) %>% 
+  group_by(year) %>%
+  summarize(mean_income = mean(income),
+            .groups = "keep") %>% 
+  ggplot(aes(year, mean_income #,
+             #color = factor(year_of_law)
+             )) +
+  geom_point() + 
+  geom_line() +
+  geom_vline(aes(xintercept = 2009), linetype = 2) + # adds a vertical line at treatment year
+  #scale_x_continuous(breaks=seq(1977, 1997, 1)) +
+  theme(legend.position="bottom")
+
+```
+The regression yields a coefficient of 9.31 (p=0), suggesting that access to mobile
+banking results in a 9.31 unit (USD?) increase in monthly household income.
+The plot suggests a much larger treatment effect of approximately 100 (USD?) per 
+month, which makes me suspect a negative bias in the regression.
+
 7.
 
-8.
+8.  
 
-9.
+```{r}
+# DIFFERENCE IN MEANS
+
+# create never-treated subset
+# source: https://stackoverflow.com/questions/24248347/subset-data-frame-filling-certain-columns-with-na-in-r
+never_treated <- subset(df_data, subset=is.na(mobilebank_year)==TRUE)
+
+# calculate difference in means
+mean(treated09$income) - mean(never_treated$income) # =  49.31671
+```
+
+```{r}
+# REGRESSION (NO FIXED EFFECTS)
+
+# create a dummy variable for whether or not the treatment time has elapsed
+df_data$post <- ifelse(
+  is.na(df_data$mobilebank_year), 
+  0, # treated = 0 if mobile bank year has no value
+  ifelse(df_data$year >= df_data$mobilebank_year, 1, 0) # if mobile bank year has a value, set treated to 1 if the year is equal or greater than mobile bank year and 0 otherwise
+)
+
+reg_09_vs_never <- lm(income ~ post + year, data=df_data)
+
+summary(reg_09_vs_never)
+
+```
+```{r}
+# REGRESSION WITH FIXED EFFECTS
+
+# referencing week 6 ta session
+
+reg_fe <- feols(income ~ post + year | household_id, # feols = fixed effect OLS
+                  cluster= ~household_id,
+                 data = df_data)
+
+
+etable(reg_fe)
+
+```
+
+The difference in means suggests a treatment effect of  49.32 units, while the 
+no fixed effects and fixed effects regressions suggest 9.88 and 110.5, respectively.
+Each estimate is very different. According to the fixed effects regression, 
+mobile banking access increases household income by 100 units on average.
+
+9. 
 
 10.
 
