@@ -26,7 +26,20 @@ using a linear regression. This calculation would include controls for variables
 which have the potential to affect monthly household incomes in order to isolate 
 the effect of mobile banking access on monthly household income.
 
-2.
+2. First, I would use the household's pre-mobile banking trends to estimate what
+the household's income would be without mobile banking at a given time *t*
+after the introduction of mobile banking access. Next, I would compare that 
+income estimate to the household's true income at time *t*. 
+
+In math, I would run a regression of income on time: Y = m[time] + b
+where Y is income, time spans from 2002 to 2008 (pre-treatment period), and
+b is the y-intercept (income at t=0). The coefficient m would be the estimated
+causal effect. 
+
+The key assumption embedded in this approach are that there were no 
+external factors/shocks that impacted income at the same time as mobile 
+banking. An external shock such as a career change or promotion within the
+household could significantly bias our estimate.
 
 3. It would be better to have data on multiple households, especially data on 
 all households that gained access in 2009, to confirm trends and ensure 
@@ -54,19 +67,201 @@ unobserved characteristics. However, ensuring that  populations are comparable
 decreases the likelihood that unobserved characteristics bias the estimated 
 causal effect.
 
-4.
+4. I would utilize a time-series diff-in-diff approach, regressing income on 
+time for two household groups: households that eventually got access to mobile
+banking and households that did not. This would involve fixed effects methodology
+to account for the varying treatment times.
+
+In math: Yit = tau(Dit) + beta(Xit) + [error]
+where Yit is the income for household i at time t, tau is the estimated treatment
+effect, Dit is the treatment status for household i at time t, and Xit represents
+covariates. 
+
+The key assumption here is the parallel trends assumption; our estimate will 
+only be unbiased if the timing of treatment was random and no external factors 
+changed between the pre- and post-treatment periods, impacting our outcome variable.
+We should be concerned that some households gained access to mobile banking 
+because of income-related factors like increased wifi access or a newfound
+ability to afford a cell phone. 
+
+```{r}
+library(tidyverse)
+library(haven)
+library(fixest) 
+library(AER)
+
+df_data = read.csv("ps3_data_spring26.csv")
+```
 
 5.
 
 6.
 
+```{r}
+# REGRESSION
+
+# create subset of households treated only in 2009
+treated09 <- subset(df_data, subset = mobilebank_year==2009)
+
+# create a dummy variable for whether or not the the 2009 treatment time has elapsed
+treated09$treated <- ifelse(treated09$year > 2008, 1, 0)
+
+reg_timeseries09 <- lm(income ~ year + treated, data=treated09)
+
+summary(reg_timeseries09)
+```
+
+```{r}
+# PLOT
+
+# borrowing from ta session week 6
+
+treated09 %>% 
+  #filter(year_of_law == "1991"| is.na(year_of_law)) %>% 
+  group_by(year) %>%
+  summarize(mean_income = mean(income),
+            .groups = "keep") %>% 
+  ggplot(aes(year, mean_income #,
+             #color = factor(year_of_law)
+             )) +
+  geom_point() + 
+  geom_line() +
+  geom_vline(aes(xintercept = 2009), linetype = 2) + # adds a vertical line at treatment year
+  #scale_x_continuous(breaks=seq(1977, 1997, 1)) +
+  theme(legend.position="bottom")
+
+```
+The regression yields a coefficient of 9.31 (p=0), suggesting that access to mobile
+banking results in a 9.31 unit (USD?) increase in monthly household income.
+The plot suggests a much larger treatment effect of approximately 100 (USD?) per 
+month, which makes me suspect a negative bias in the regression.
+
 7.
 
-8.
+8.  
 
-9.
+```{r}
+# DIFFERENCE IN MEANS
 
-10.
+# create never-treated subset
+# source: https://stackoverflow.com/questions/24248347/subset-data-frame-filling-certain-columns-with-na-in-r
+never_treated <- subset(df_data, subset=is.na(mobilebank_year)==TRUE)
+
+# calculate difference in means
+mean(treated09$income) - mean(never_treated$income) # =  49.31671
+```
+
+```{r}
+# REGRESSION (NO FIXED EFFECTS)
+
+# create a dummy variable for whether or not the treatment time has elapsed
+df_data$post <- ifelse(
+  is.na(df_data$mobilebank_year), 
+  0, # treated = 0 if mobile bank year has no value
+  ifelse(df_data$year >= df_data$mobilebank_year, 1, 0) # if mobile bank year has a value, set treated to 1 if the year is equal or greater than mobile bank year and 0 otherwise
+)
+
+reg_09_vs_never <- lm(income ~ post + year, data=df_data)
+
+summary(reg_09_vs_never)
+
+```
+```{r}
+# REGRESSION WITH FIXED EFFECTS
+
+# referencing week 6 ta session
+
+reg_fe <- feols(income ~ post + year | household_id, # feols = fixed effect OLS
+                  cluster= ~household_id,
+                 data = df_data)
 
 
+etable(reg_fe)
+
+```
+
+The difference in means suggests a treatment effect of  49.32 units, while the 
+no fixed effects and fixed effects regressions suggest 9.88 and 110.5, respectively.
+Each estimate is very different. According to the fixed effects regression, 
+mobile banking access increases household income by 100 units on average.
+
+9. 
+
+10. 
+```{r}
+# reference week 7 ta session
+
+# create time-to-treat variable
+
+df_data <- df_data %>%
+  mutate(
+    time_to_treat = case_when(
+      is.na(mobilebank_year)            ~ -1000,  # never-treated: reference throughout
+      year - mobilebank_year < -6       ~   -15,   # bin early pre-period
+      year - mobilebank_year >   6      ~    15,   # bin late post-period
+      TRUE                         ~ year - mobilebank_year
+    )
+  )
+
+
+  # I used -15 and 15 because the data only covers 15 years. Should cover everything? -       arianna
+
+summary(df_data$time_to_treat) # How is the median -505.5? Suggests an issue, no?
+
+# code time-to-treat values
+
+df_data <- df_data %>%
+  mutate(
+    D_0 = as.numeric(time_to_treat >= 0),
+    D_1 = as.numeric(time_to_treat >= 1),
+    D_2 = as.numeric(time_to_treat >= 2),
+    D_3 = as.numeric(time_to_treat >= 3),
+    D_4 = as.numeric(time_to_treat >= 4),
+    D_5 = as.numeric(time_to_treat >= 5),
+    D_6 = as.numeric(time_to_treat >= 6),
+    D_7 = as.numeric(time_to_treat >= 7),
+    D_8 = as.numeric(time_to_treat >= 8),
+    D_9 = as.numeric(time_to_treat >= 9),
+    D_10 = as.numeric(time_to_treat >= 10),
+    D_11 = as.numeric(time_to_treat >= 11),
+    D_12 = as.numeric(time_to_treat >= 12),
+    D_13 = as.numeric(time_to_treat >= 13),
+    D_14 = as.numeric(time_to_treat >= 14),
+    D_15 = as.numeric(time_to_treat >= 15)
+  )
+
+# run the distributed lab model
+
+dl <- feols(income ~ D_0 + D_1 + D_2 + D_3 + D_4 + D_5 + D_6 + D_7 + D_8 + D_9
+            + D_10 + D_11 + D_12 + D_13 + D_14 + D_15| # dl = distributed lag
+              household_id + year,
+            cluster = ~household_id,
+            data = df_data)
+
+etable(dl)
+
+```
+```{r}
+
+# week 7 ta session
+coef_df <- as.data.frame(coeftable(dl)) %>%
+  rownames_to_column("term") %>%
+  mutate(
+    period = 0:7, # put the number 7 here bc I got an error saying that  `period` must be size 8 or 1.  - arianna
+    ci_lo  = Estimate - 1.96 * `Std. Error`,
+    ci_hi  = Estimate + 1.96 * `Std. Error`
+  )
+
+ggplot(coef_df, aes(x = period, y = Estimate)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi), width = 0.25) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  scale_x_continuous(breaks = 0:6) +
+  labs(x     = "Years Since Obtaining Mobile Banking Access",
+       y     = "Marginal Effect on Mobile Banking Access",
+       title = "Distributed Lag Model: Income and Mobile Banking Access") +
+  theme_minimal()
+```
+
+The cumulative effect of treatment after 5 years is 3.96 income units.
 
