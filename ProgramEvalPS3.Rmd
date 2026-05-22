@@ -84,6 +84,7 @@ We should be concerned that some households gained access to mobile banking
 because of income-related factors like increased wifi access or a newfound
 ability to afford a cell phone. 
 
+5.
 ```{r}
 library(tidyverse)
 library(haven)
@@ -93,7 +94,19 @@ library(AER)
 df_data = read.csv("ps3_data_spring26.csv")
 ```
 
-5.
+```{r}
+# explore data
+glimpse(df_data)
+summary(df_data)
+```
+
+```{r}
+# compare average household incomes from households that never gained mobile
+# banking to those that eventually did
+
+```
+
+
 
 6.
 
