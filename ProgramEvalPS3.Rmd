@@ -104,8 +104,23 @@ summary(df_data)
 # compare average household incomes from households that never gained mobile
 # banking to those that eventually did
 
-```
+naive_treatment <- df_data %>%
+  group_by(household_id) %>%
+  filter(year==2017)
 
+# create a subset for treated households
+treated <- subset(naive_treatment, subset =is.na(mobilebank_year)==FALSE)
+
+# create a subset for untreated households
+untreated <- subset(naive_treatment, subset =is.na(mobilebank_year)==TRUE)
+
+# compare averages
+naive_est <- mean(treated$income) - mean(untreated$income)
+print(naive_est)
+```
+Households that were eventually gained mobile banking access had an average
+household income that was $111.0297 greater than the average income for 
+households that never gained mobile banking access.
 
 
 6.
