@@ -165,6 +165,27 @@ The plot suggests a much larger treatment effect of approximately 100 (USD?) per
 month, which makes me suspect a negative bias in the regression.
 
 7.
+```{r}
+# plot average household incomes against time for households that never gained 
+# mobile banking access
+df_data %>%
+  group_by(year) %>%
+  filter(is.na(mobilebank_year)==TRUE) %>%
+  summarize(mean_income = mean(income), 
+            .groups = "keep") %>%
+  ggplot(aes(year, mean_income)) + 
+  geom_point() +
+  geom_line() +
+  theme(legend.position="bottom")
+```
+Using never-treated households is not a viable control because household income 
+for never treated households has an upward trend. This trend suggests that 
+household income was already increasing prior to the time when mobile banking 
+was instituted and continued increasing after mobile banking was implemented. 
+Thus, since never treated households experienced increased income in the absence 
+of treatment, these households would be a poor control group for households that 
+registered for mobile banking in 2009 because they do not demonstrate how the 
+incomes for treated households would have changed in the absence of treatment.
 
 8.  
 
@@ -214,6 +235,42 @@ Each estimate is very different. According to the fixed effects regression,
 mobile banking access increases household income by 100 units on average.
 
 9. 
+```{r}
+# EVENT STUDY REGRESSION
+
+# create time-to-treat variable
+df_data <- df_data %>%
+  mutate(
+    time_to_treat = case_when(
+      is.na(mobilebank_year)          ~ -1000,  # never-treated: reference throughout
+      year - mobilebank_year < -6     ~   -15,   # bin early pre-period
+      year - mobilebank_year >  6     ~    15,   # bin late post-period
+      TRUE                            ~ year - mobilebank_year
+    )
+  )
+
+# create the event study regression
+event_study <- feols(income ~i(time_to_treat, ref = c(-1, -1000)) | 
+                       household_id + year,
+                     cluster = ~household_id,
+                     data = df_data)
+etable(event_study)
+```
+```{r, fig.height=4}
+# PLOT EVENT STUDY REGRESSION
+
+# plot event study regression
+iplot(event_study,
+      ref.line = -0.5,
+      xlab  = "Years Relative to Mobile Banking Access",
+      main  = "Event Study: Mobile Banking Access and Average Households 
+      Incomes")
+abline(h = 0, lty = 2, col = "gray50")
+```
+Pre-treatment trends are flat, which suggests that treated and control 
+households had similar trends in income prior to mobile banking access. Post-
+treatment trends are increasing, which suggests that access to mobile banking is
+associated with a increase in household income. 
 
 10. 
 ```{r}
